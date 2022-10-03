@@ -31,10 +31,10 @@ double FunB(double x) {
 }
 
 double dFunB(double x) {
-    return -1;
+    return 8.1 * pow(sin(x), 2) * cos(x) - 9.9 * sin(x) * pow(cos(x), 2);
 }
 double ddFunB(double x) {
-    return -1;
+    return -8.1 * pow(sin(x), 3) + 19.8 * pow(sin(x), 2) * cos(x) + 16.2 * sin(x) * pow(cos(x), 2) - 9.9 * pow(cos(x), 3);
 }
 
 bool Max(double x, double y) {
@@ -74,27 +74,28 @@ void Indent(int n = 1) {
     std::cout << "\n\n";
 }
 
-void Tangent(double(*Fun)(double), double esp, double a, double b) {
-    int counter = 0; double x1 = 0, x2, dfa, dfb;
+void Tangent(double(*Fun)(double), double esp, double a, double b, bool(*Operator)(double, double) = Min) {
+    int counter = 0; double x = 0, dfa, dfb;
     double(*dFun)(double) = Fun == FunA ? dFunA : dFunB;
     //dFun = dF; Fun = F;
 
     while ((b - a) > 2 * esp) {
         dfa = dFun(a); dfb = dFun(b);
-        x1 = (Fun(a) - Fun(b) - a * dfa + b * dfb) / (dfb - dfa);
+        x = (Fun(a) - Fun(b) - a * dfa + b * dfb) / (dfb - dfa);
 
-        if (dFun(x1) >= 0)
-            b = x1;
+        if (Operator(dFun(x), 0))
+            b = x;
         else
-            a = x1;
+            a = x;
 
         counter++;
+        if (counter > 1000000) break;
     }
 
-    Print("Tangent", Fun, esp, (a + b) / 2, counter);
+    Print("Tangent", Fun, esp, (a + b) / 2, counter, Operator);
 }
 
-void MidPoint(double(*Fun)(double), double esp, double a, double b) {
+void MidPoint(double(*Fun)(double), double esp, double a, double b, bool(*Operator)(double, double) = Min) {
     int counter = 0; double x, dfx;
     double(*dFun)(double) = Fun == FunA ? dFunA : dFunB;
 
@@ -102,7 +103,7 @@ void MidPoint(double(*Fun)(double), double esp, double a, double b) {
         x = (a + b) / 2;
         dfx = dFun(x);
 
-        if (dFun(x) >= 0)
+        if (Operator(dFun(x), 0))
             b = x;
         else
             a = x;
@@ -110,7 +111,7 @@ void MidPoint(double(*Fun)(double), double esp, double a, double b) {
         counter++;
     }
 
-    Print("Mid Point", Fun, esp, (a + b) / 2, counter);
+    Print("Mid Point", Fun, esp, (a + b) / 2, counter, Operator);
 }
 
 void Newton(double(*Fun)(double), double esp, double xn) {
@@ -146,17 +147,49 @@ int main()
         std::cout << "\n\n";
     }
 
+    Indent();
+
     for (double esp = 0.001; esp >= 0.00001; esp /= 100) {
         Tangent(FunA, esp, a, b);
         std::cout << "\n\n";
     }
 
+    /*Indent();
+
     for (double esp = 0.001; esp >= 0.00001; esp /= 100) {
         Newton(FunA, esp, (a+b)/2);
         std::cout << "\n\n";
+    }*/
+
+    Indent(2);
+
+    std::cout << "Fun B" << std::endl;
+    std::cout << "Intervals function B" << std::endl;
+
+    std::vector<double> intervals = { 0,0.5,0.9,3 * PI / 4 };
+
+    for (int i = 0; i < intervals.size() - 1; i++)
+        std::cout << "(" << intervals[i] << ";" << intervals[i + 1] << ") ";
+
+    std::cout << "\n\n";
+
+
+    for (double esp = 0.001; esp >= 0.00001; esp /= 100) {
+        for (int i = 0; i < intervals.size() - 1; i++) {
+            MidPoint(FunB, esp, intervals[i], intervals[i + 1], i % 2 == 0 ? Max : Min);
+            std::cout << "\n\n";
+        }
+        Indent();
     }
 
-    
+
+    for (double esp = 0.001; esp >= 0.00001; esp /= 100) {
+        for (int i = 0; i < intervals.size() - 1; i++) {
+            Tangent(FunB, esp, intervals[i], intervals[i + 1], i % 2 == 0 ? Max : Min);
+            std::cout << "\n\n";
+        }
+        Indent();
+    }
 
 
     return 0;
