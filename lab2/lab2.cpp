@@ -95,6 +95,7 @@ void Tangent(double(*Fun)(double), double esp, double a, double b, bool(*Operato
     Print("Tangent", Fun, esp, (a + b) / 2, counter, Operator);
 }
 
+
 void MidPoint(double(*Fun)(double), double esp, double a, double b, bool(*Operator)(double, double) = Min) {
     int counter = 0; double x, dfx;
     double(*dFun)(double) = Fun == FunA ? dFunA : dFunB;
@@ -115,16 +116,17 @@ void MidPoint(double(*Fun)(double), double esp, double a, double b, bool(*Operat
 }
 
 void Newton(double(*Fun)(double), double esp, double xn) {
-    int counter = 0; double x = xn;
+    int counter = 0; double x = xn, x1 = xn-1;
     double(*dFun)(double) = Fun == FunA ? dFunA : dFunB;
     double(*ddFun)(double) = Fun == FunA ? ddFunA : ddFunB;
     
-    while (abs(dFun(x)) > esp) {
+    while (abs(x-x1) > esp) {
+        x1 = x;
         x = x - dFun(x) / ddFun(x);
         counter++;
     }
 
-    Print("Newton", Fun, esp, x, counter);
+    Print("Newton", Fun, esp, x, counter, ddFunB(x) <= 0 ? Max : Min);
 }
 
 /*double SearchPointForNewton(double(*Fun)(double), double a, double b) {
@@ -154,12 +156,12 @@ int main()
         std::cout << "\n\n";
     }
 
-    /*Indent();
+    Indent();
 
     for (double esp = 0.001; esp >= 0.00001; esp /= 100) {
-        Newton(FunA, esp, (a+b)/2);
+        Newton(FunA, esp, b);
         std::cout << "\n\n";
-    }*/
+    }
 
     Indent(2);
 
@@ -186,6 +188,14 @@ int main()
     for (double esp = 0.001; esp >= 0.00001; esp /= 100) {
         for (int i = 0; i < intervals.size() - 1; i++) {
             Tangent(FunB, esp, intervals[i], intervals[i + 1], i % 2 == 0 ? Max : Min);
+            std::cout << "\n\n";
+        }
+        Indent();
+    }
+
+    for (double esp = 0.001; esp >= 0.00001; esp /= 100) {
+        for (int i = 0; i < intervals.size() - 1; i++) {
+            Newton(FunB, esp, intervals[i]);
             std::cout << "\n\n";
         }
         Indent();
